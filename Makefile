@@ -1,14 +1,33 @@
-# Variables (pueden extenderse más adelante)
+# Makefile
 SHELL := /bin/bash
 
-# 🔧 Infraestructura
-up:
-	docker compose up -d
+# ==============================
+# 🐘 PostgreSQL en Docker (solo DB)
+# ==============================
 
-down:
-	docker compose down -v
+db-up:
+	docker compose -f docker-compose.dev.yml up -d
 
-# 🧪 Prisma
+db-down:
+	docker compose -f docker-compose.dev.yml down -v
+
+# ==============================
+# 🐳 Backend completo en Docker (API + DB)
+# ==============================
+
+compose-up:
+	docker compose -f docker-compose.prod.yml up --build -d
+
+compose-down:
+	docker compose -f docker-compose.prod.yml down -v
+
+logs:
+	docker compose -f docker-compose.prod.yml logs -f api
+
+# ==============================
+# 🔧 Prisma ORM
+# ==============================
+
 db-push:
 	npx prisma db push
 
@@ -18,14 +37,20 @@ studio:
 seed:
 	npm run seed:run
 
+# ==============================
 # 🧹 Utilidades
+# ==============================
+
 lint:
 	npm run lint
 
 format:
 	npm run format
 
-# 🚀 Nest
+# ==============================
+# 🚀 NestJS (local)
+# ==============================
+
 dev:
 	npm run start:dev
 
@@ -35,7 +60,10 @@ build:
 start:
 	npm run start
 
+# ==============================
 # 🧪 Tests
+# ==============================
+
 test:
 	npm run test
 

@@ -1,4 +1,17 @@
 services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: volsmart_api
+    restart: unless-stopped
+    ports:
+      - '8080:8080'
+    environment:
+      DATABASE_URL: 'postgresql://volsmart:volsmart@db:5432/volsmart_db'
+    depends_on:
+      - db
+
   db:
     image: postgres:16-alpine
     container_name: volsmart_db
@@ -11,9 +24,12 @@ services:
       - '5432:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - volsmart-net
 
 volumes:
   pgdata:
 
 networks:
   volsmart-net:
+    driver: bridge

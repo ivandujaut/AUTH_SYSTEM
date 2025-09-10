@@ -1,0 +1,12 @@
+node_modules
+dist/
+coverage
+.env
+.env.*
+*.log
+*.test.ts
+Dockerfile
+Dockerfile.*
+docker-compose.*
+.vscode
+.idea
