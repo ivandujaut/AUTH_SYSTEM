@@ -19,8 +19,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "compose:up": "docker compose up -d",
     "compose:down": "docker compose down -v",
-    "migrate:run": "ts-node -r tsconfig-paths/register src/data-source/run-migrations.ts",
     "seed:run": "ts-node -r tsconfig-paths/register src/data-source/seed.ts",
+    "prisma:seed": "npm run seed:run",
     "db:push": "prisma db push",
     "studio": "prisma studio"
   },
