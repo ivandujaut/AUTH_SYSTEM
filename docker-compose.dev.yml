@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: volsmart_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: volsmart
+      POSTGRES_PASSWORD: volsmart
+      POSTGRES_DB: volsmart_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - volsmart-net
+
+volumes:
+  pgdata:
+
+networks:
+  volsmart-net:
+    driver: bridge
