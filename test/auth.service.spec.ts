@@ -11,7 +11,7 @@ describe('AuthService', () => {
   };
 
   const mockJwtService = {
-    sign: jest.fn((payload: Record<string, string>) => jwt.sign(payload, 'test-secret', { expiresIn: '1h' })),
+    sign: jest.fn((payload: Record<string, string>) => jwt.sign(payload, 'TEST_SECRET', { expiresIn: '1h' })),
   };
 
   beforeEach(() => {

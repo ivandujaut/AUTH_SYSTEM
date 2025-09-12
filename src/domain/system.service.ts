@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSourceProvider } from '../data-source/providers/data-source.provider.js';
+import { DataSourceProvider } from '../data-source/providers/data-source.provider';
 
 @Injectable()
 export class SystemService {
