@@ -1,9 +1,12 @@
-import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { HealthController } from './presentation/controllers/health.controller.js';
-import { SystemService } from './domain/system.service.js';
-import { DataSourceProvider } from './data-source/providers/data-source.provider.js';
-import { configuration } from './config/configuration.js';
+import { configuration } from './config/configuration';
+import { DataSourceProvider } from './data-source/providers/data-source.provider';
+import { FakeController } from './presentation/controllers/fake.controller';
+import { HealthController } from './presentation/controllers/health.controller';
+import { JwtStrategy } from './presentation/jwt.strategy';
+import { Module } from '@nestjs/common';
+import { SystemService } from './domain/system.service';
+import { SecureController } from './presentation/controllers/secure.controller';
 
 @Module({
   imports: [
@@ -12,7 +15,7 @@ import { configuration } from './config/configuration.js';
       isGlobal: true,
     }),
   ],
-  controllers: [HealthController],
-  providers: [SystemService, DataSourceProvider],
+  controllers: [HealthController, FakeController, SecureController],
+  providers: [SystemService, DataSourceProvider, JwtStrategy],
 })
 export class AppModule {}
