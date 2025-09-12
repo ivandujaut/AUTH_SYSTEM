@@ -1,5 +1,5 @@
+import { Permission } from '@/domain/types/permissions';
 import { Role } from '@prisma/client';
-import { Response } from 'supertest';
 
 export type ResponseBody = {
   message: string;
@@ -7,7 +7,10 @@ export type ResponseBody = {
     sub: string;
     email: string;
     role: Role;
+    permissions: Permission[];
   };
 };
 
-export const extractBody = (res: Response): ResponseBody => res.body as ResponseBody;
+export function extractBody<T>(res: { body: unknown }): T {
+  return res.body as T;
+}

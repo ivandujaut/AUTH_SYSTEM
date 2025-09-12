@@ -1,9 +1,11 @@
 import { Controller, Get } from '@nestjs/common';
+import { Public } from '../decorators/public.decorator';
 
 @Controller()
 export class HealthController {
   @Get()
-  getRoot() {
+  @Public()
+  getStatus() {
     return 'NestJS + TypeScript Server';
   }
 
