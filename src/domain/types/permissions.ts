@@ -1,11 +1,15 @@
 export enum Permission {
-  READ_USERS = 'read:users',
-  WRITE_USERS = 'write:users',
-  DELETE_USERS = 'delete:users',
+  VIEW_PROPERTIES = 'view:properties',
+  VIEW_PLACEMENT = 'view:placement',
+  INVEST = 'invest',
+  VIEW_MY_INVESTMENTS = 'view:my-investments',
 
-  READ_PRODUCTS = 'read:products',
-  WRITE_PRODUCTS = 'write:products',
-  DELETE_PRODUCTS = 'delete:products',
-
-  VIEW_DASHBOARD = 'view_dashboard',
+  CREATE_PROPERTIES = 'create:properties',
+  MANAGE_PROPERTIES = 'manage:properties',
+  CREATE_PLACEMENT = 'create:placement',
+  MANAGE_PLACEMENT = 'manage:placement',
+  VIEW_ALL_INVESTMENTS = 'view:all-investments',
+  VIEW_USERS = 'view:users',
+  MANAGE_USERS = 'manage:users',
+  UPDATE_NAV_PRICE = 'update:nav-price',
 }

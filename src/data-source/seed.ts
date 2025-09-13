@@ -60,6 +60,17 @@ async function main() {
     },
   });
 
+  // Crear placement solo para re1
+  await prisma.placement.upsert({
+    where: { propertyId: re1.id },
+    update: {},
+    create: {
+      propertyId: re1.id,
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    },
+  });
+
   await prisma.investment.createMany({
     data: [
       {

@@ -37,6 +37,9 @@ studio:
 seed:
 	npm run seed:run
 
+setup-db:
+	make db-up && make db-push && make seed
+
 # ==============================
 # 🧹 Utilidades
 # ==============================

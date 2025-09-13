@@ -1,7 +1,7 @@
 import { Permission } from '@/domain/types/permissions';
 import { Role } from '@prisma/client';
 
-export type ResponseBody = {
+export type ResponseBody<T = unknown> = {
   message: string;
   user: {
     sub: string;
@@ -9,6 +9,7 @@ export type ResponseBody = {
     role: Role;
     permissions: Permission[];
   };
+  data?: T;
 };
 
 export function extractBody<T>(res: { body: unknown }): T {
