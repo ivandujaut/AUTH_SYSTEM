@@ -1,3 +1,4 @@
+import { Permission } from '@/domain/types/permissions';
 import { PrismaClient } from '@prisma/client';
 import { scryptSync, randomBytes } from 'crypto';
 
@@ -17,6 +18,7 @@ async function main() {
       email: 'admin@volsmart.io',
       passwordHash: hash('Password123!'),
       role: 'ADMIN',
+      permissions: Object.values(Permission),
     },
   });
 
@@ -27,6 +29,13 @@ async function main() {
       email: 'manager@volsmart.io',
       passwordHash: hash('Password123!'),
       role: 'MANAGER',
+      permissions: [
+        Permission.VIEW_PROPERTIES,
+        Permission.VIEW_PLACEMENT,
+        Permission.VIEW_ALL_INVESTMENTS,
+        Permission.VIEW_USERS,
+        Permission.INVEST,
+      ],
     },
   });
 
@@ -37,6 +46,12 @@ async function main() {
       email: 'user@volsmart.io',
       passwordHash: hash('Password123!'),
       role: 'USER',
+      permissions: [
+        Permission.VIEW_PROPERTIES,
+        Permission.VIEW_PLACEMENT,
+        Permission.VIEW_MY_INVESTMENTS,
+        Permission.INVEST,
+      ],
     },
   });
 
@@ -60,7 +75,6 @@ async function main() {
     },
   });
 
-  // Crear placement solo para re1
   await prisma.placement.upsert({
     where: { propertyId: re1.id },
     update: {},

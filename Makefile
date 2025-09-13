@@ -70,11 +70,20 @@ start:
 test:
 	npm run test
 
-test-watch:
-	npm run test:watch
-
-test-cov:
-	npm run test:cov
+test-unit:
+	npm run test:unit
 
 test-e2e:
 	npm run test:e2e
+
+test-cov:
+	npm run test:cov:all
+
+test-cov-unit:
+	npm run test:cov:unit
+
+test-cov-e2e:
+	npm run test:cov:e2e
+
+test-watch:
+	npm run test:watch

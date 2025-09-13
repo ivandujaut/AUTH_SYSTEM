@@ -10,6 +10,7 @@ export class HealthController {
   }
 
   @Get('health')
+  @Public()
   getHealth() {
     return { status: 'ok' };
   }
