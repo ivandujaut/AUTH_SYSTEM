@@ -28,11 +28,14 @@ model Property {
   id          String       @id @default(uuid())
   symbol      String       @unique
   name        String
+  description String?
   status      Status       @default(ACTIVE)
   navPrice    Decimal      @default(0.0000)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   investments Investment[]
+
+  placement Placement?
 }
 
 model Investment {
@@ -44,6 +47,17 @@ model Investment {
   amount     Decimal
   avgPrice   Decimal
   createdAt  DateTime @default(now())
+}
+
+model Placement {
+  id        String   @id @default(uuid())
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  propertyId String   @unique
+  property   Property @relation(fields: [propertyId], references: [id])
 }
 
 enum Role {

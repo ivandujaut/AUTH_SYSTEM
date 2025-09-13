@@ -1,16 +1,33 @@
-import { AdminController } from './presentation/controllers/admin.controller';
+import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+
 import { configuration } from './config/configuration';
-import { DashboardController } from './presentation/controllers/dashboard.controller';
-import { DataSourceProvider } from './data-source/providers/data-source.provider';
-import { HealthController } from './presentation/controllers/health.controller';
-import { JwtAuthGuard } from './presentation/guards/jwt-auth.guard';
+
+// JWT y Guards
 import { JwtStrategy } from './presentation/jwt.strategy';
-import { Module } from '@nestjs/common';
+import { JwtAuthGuard } from './presentation/guards/jwt-auth.guard';
 import { PermissionsGuard } from './presentation/guards/permissions.guard';
-import { SecureController } from './presentation/controllers/secure.controller';
+
+// Controllers
+import { HealthController } from './presentation/controllers/health.controller';
+import { PropertiesController } from './presentation/controllers/properties.controller';
+import { PlacementController } from './presentation/controllers/placement.controller';
+
+// Domain Services
 import { SystemService } from './domain/system.service';
+import { PropertyService } from './domain/services/property.service';
+import { PlacementService } from './domain/services/placement.service';
+
+// Repositorio implementado
+import { PropertyRepository } from './domain/repositories/property.repository';
+import { PrismaPropertyRepository } from './data-source/repositories/prisma-property.repository';
+import { PlacementRepository } from './domain/repositories/placement.repository';
+import { PrismaPlacementRepository } from './data-source/repositories/prisma-placement.repository';
+
+// Prisma Client
+import { PrismaClient } from '@prisma/client';
+import { DataSourceProvider } from './data-source/providers/data-source.provider';
 
 @Module({
   imports: [
@@ -19,10 +36,28 @@ import { SystemService } from './domain/system.service';
       isGlobal: true,
     }),
   ],
-  controllers: [HealthController, SecureController, DashboardController, AdminController],
+  controllers: [HealthController, PropertiesController, PlacementController],
   providers: [
-    SystemService,
+    // Core / DB
+    PrismaClient,
     DataSourceProvider,
+    SystemService,
+
+    // Domain Services
+    PropertyService,
+    PlacementService,
+
+    // Repositorios
+    {
+      provide: PropertyRepository,
+      useClass: PrismaPropertyRepository,
+    },
+    {
+      provide: PlacementRepository,
+      useClass: PrismaPlacementRepository,
+    },
+
+    // JWT & Permisos
     JwtStrategy,
     {
       provide: APP_GUARD,
