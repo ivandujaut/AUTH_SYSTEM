@@ -22,6 +22,7 @@ model User {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   investments  Investment[]
+  permissions  String[]     @default([]) 
 }
 
 model Property {

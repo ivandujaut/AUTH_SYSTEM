@@ -13,6 +13,7 @@ import { PermissionsGuard } from './presentation/guards/permissions.guard';
 import { HealthController } from './presentation/controllers/health.controller';
 import { PropertiesController } from './presentation/controllers/properties.controller';
 import { PlacementController } from './presentation/controllers/placement.controller';
+import { InvestmentController } from './presentation/controllers/investment.controller';
 
 // Domain Services
 import { SystemService } from './domain/system.service';
@@ -24,6 +25,8 @@ import { PropertyRepository } from './domain/repositories/property.repository';
 import { PrismaPropertyRepository } from './data-source/repositories/prisma-property.repository';
 import { PlacementRepository } from './domain/repositories/placement.repository';
 import { PrismaPlacementRepository } from './data-source/repositories/prisma-placement.repository';
+import { InvestmentRepository } from './domain/repositories/investment.repository';
+import { PrismaInvestmentRepository } from './data-source/repositories/prisma-investment.repository';
 
 // Prisma Client
 import { PrismaClient } from '@prisma/client';
@@ -36,7 +39,7 @@ import { DataSourceProvider } from './data-source/providers/data-source.provider
       isGlobal: true,
     }),
   ],
-  controllers: [HealthController, PropertiesController, PlacementController],
+  controllers: [HealthController, PropertiesController, PlacementController, InvestmentController],
   providers: [
     // Core / DB
     PrismaClient,
@@ -55,6 +58,10 @@ import { DataSourceProvider } from './data-source/providers/data-source.provider
     {
       provide: PlacementRepository,
       useClass: PrismaPlacementRepository,
+    },
+    {
+      provide: InvestmentRepository,
+      useClass: PrismaInvestmentRepository,
     },
 
     // JWT & Permisos
