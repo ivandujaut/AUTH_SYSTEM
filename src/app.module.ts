@@ -19,6 +19,7 @@ import { InvestmentController } from './presentation/controllers/investment.cont
 import { SystemService } from './domain/system.service';
 import { PropertyService } from './domain/services/property.service';
 import { PlacementService } from './domain/services/placement.service';
+import { InvestmentService } from './domain/services/investment.service';
 
 // Repositorio implementado
 import { PropertyRepository } from './domain/repositories/property.repository';
@@ -49,6 +50,7 @@ import { DataSourceProvider } from './data-source/providers/data-source.provider
     // Domain Services
     PropertyService,
     PlacementService,
+    InvestmentService,
 
     // Repositorios
     {
