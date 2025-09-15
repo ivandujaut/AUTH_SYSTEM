@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Param, Req, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+  ForbiddenException,
+} from '@nestjs/common';
 import { CreateInvestmentDto } from '@/presentation/dto/create-investment.dto';
 import { InvestmentService } from '@/domain/services/investment.service';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
@@ -53,7 +64,6 @@ export class InvestmentController {
   @Get('me/summary')
   @Permissions(Permission.VIEW_MY_INVESTMENTS)
   async getMyInvestmentsSummary(@Req() req: RequestWithUser) {
-    console.log('✅ [GET /investments/me/summary] endpoint reached');
     const userId = req.user.sub;
     const investments = await this.investmentService.findByUserId(userId);
     const summary = InvestmentMapper.toSummary(investments);
@@ -81,6 +91,9 @@ export class InvestmentController {
   @Permissions(Permission.INVEST)
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() dto: CreateInvestmentDto, @Req() req: RequestWithUser) {
+    if (req.user.role !== 'USER') {
+      throw new ForbiddenException('Only users with role USER can invest');
+    }
     const ownerId = req.user.sub;
     const investment = await this.investmentService.create({
       ...dto,

@@ -1,28 +1,50 @@
-# Makefile
 SHELL := /bin/bash
 
+DC_DEV = docker compose -f docker-compose.dev.yml
+DC_PROD = docker compose -f docker-compose.prod.yml
+
 # ==============================
-# 🐘 PostgreSQL en Docker (solo DB)
+# 👨‍💻 Entorno de Desarrollo Completo (API + DB)
+# ==============================
+
+dev-up:
+	$(DC_DEV) up --build -d
+
+dev-down:
+	$(DC_DEV) down -v
+
+dev-logs:
+	$(DC_DEV) logs -f api
+
+# ==============================
+# 🐘 PostgreSQL solo (útil para tests locales o studio)
 # ==============================
 
 db-up:
-	docker compose -f docker-compose.dev.yml up -d
+	$(DC_DEV) up -d db
 
 db-down:
-	docker compose -f docker-compose.dev.yml down -v
+	$(DC_DEV) stop db && $(DC_DEV) rm -f db
 
 # ==============================
-# 🐳 Backend completo en Docker (API + DB)
+# 🧪 Inicializar entorno completo y testear
 # ==============================
 
-compose-up:
-	docker compose -f docker-compose.prod.yml up --build -d
+dev-init:
+	make dev-up && make db-push && make seed && make test
 
-compose-down:
-	docker compose -f docker-compose.prod.yml down -v
+# ==============================
+# 🚀 Despliegue en Producción con Docker Compose
+# ==============================
 
-logs:
-	docker compose -f docker-compose.prod.yml logs -f api
+prod-up:
+	$(DC_PROD) up --build -d
+
+prod-down:
+	$(DC_PROD) down -v
+
+prod-logs:
+	$(DC_PROD) logs -f api
 
 # ==============================
 # 🔧 Prisma ORM

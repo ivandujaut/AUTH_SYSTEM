@@ -56,42 +56,65 @@ Uso de DTOs (Data Transfer Objects) para:
 
 ---
 
-## Flujo de prueba sugerido (local)
+## Flujo de prueba (entorno local)
 
-> Requiere: Docker y Node.js
+> Requisitos: Docker, Node.js, y `make`
 
 ```bash
-# 1. Levantar solo la DB
-make db-up
+# 1. Levantar entorno completo (API + DB + Prisma Studio)
+make dev-up
 
-# 2. Ejecutar migraciones y seeds
+# 2. Aplicar migraciones y datos iniciales
 make db-push
 make seed
 
-# 3. Ejecutar la API en modo desarrollo
-make dev
+# 3. Ver logs de la API (opcional)
+make dev-logs
 
-# 4. Acceder a la base de datos (opcional)
+# 4. Abrir Prisma Studio (GUI de la base de datos)
 make studio
 ```
 
-También podés levantar todo con:
+---
+
+## 🚀 Despliegue en Producción con Docker Compose
+
+### Levantar entorno de producción con Make
+
+> Requiere tener Docker instalado.
 
 ```bash
-make compose-up  # (API + DB en producción dockerizada)
+make prod-up       # Levanta API + DB en producción
 ```
 
+Esto iniciará los siguientes servicios:
+
+- `volsmart_api`: La aplicación backend en modo producción.
+- `volsmart_db`: El contenedor de PostgreSQL con volúmenes persistentes.
+
+Para detener el entorno:
+
+```bash
+make prod-down
+```
 ---
+## Tests en Postman
 
-## Testing manual con Postman
+Se incluye una colección de Postman para probar los endpoints del servicio.
 
-- Asegurate de importar la colección de Postman provista.
-- Variables necesarias:
-  - `base_url`: por defecto http://localhost:8080
-  - `access_token`: generado al hacer login
-  - `property_id`: usado para simular inversión
+### Pasos para probar
 
----
+1. Abrí Postman.
+2. Importá la colección `challenge.postman_collection.json`.
+3. Importá las variables de entorno desde `challenge_environment.postman_environment.json`.
+4. Seleccioná el entorno activo (arriba a la derecha en Postman).
+5. Ejecutá los endpoints en el orden adecuado:
+   - Autenticación (Login)
+   - Propiedades
+   - Inversiones
+   - Resumen de inversiones
+
+> ⚠️ Asegurate de tener corriendo el backend en `http://localhost:8080` o actualizá la variable `base_url` si usás otra dirección.
 
 ## Convenciones del proyecto
 
@@ -145,15 +168,20 @@ make compose-up  # (API + DB en producción dockerizada)
 
 ## Variables de entorno `.env`
 
-```env
-DB_HOST=localhost
+```
+DB_HOST=db
 DB_PORT=5432
 DB_USER=volsmart
 DB_PASSWORD=volsmart
 DB_NAME=volsmart_db
-JWT_SECRET=TEST_SECRET
 
-DATABASE_URL="postgresql://volsmart:volsmart@localhost:5432/volsmart_db"
+POSTGRES_USER=volsmart
+POSTGRES_PASSWORD=volsmart
+POSTGRES_DB=volsmart_db
+
+DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+
+JWT_SECRET=TEST_SECRET
 ```
 
 ---
@@ -175,3 +203,11 @@ El proyecto fue pensado para ser:
 - Extensible (roles, inversiones, propiedades)
 - Fácil de testear (alta cobertura)
 - Mantenible (clean code + clean architecture)
+
+### Roles y permisos
+
+- `USER`: puede invertir, ver sus inversiones y consultar propiedades activas.
+- `MANAGER`: supervisa las inversiones y propiedades, pero **no puede invertir**.
+- `ADMIN`: rol reservado para tareas administrativas y de configuración.
+
+> Por diseño, solo los usuarios con rol `USER` pueden crear inversiones.
