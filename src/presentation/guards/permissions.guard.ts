@@ -1,8 +1,9 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { PERMISSIONS_KEY } from '@/presentation/decorators/permissions.decorator';
 import { Permission } from '@/domain/types/permissions';
+import { PERMISSIONS_KEY } from '@/presentation/decorators/permissions.decorator';
+import { Reflector } from '@nestjs/core';
 import { RequestWithUser } from '@/domain/types/request-with-user.interface';
+import { ROLE_PERMISSIONS } from '@/domain/mappings/role-permissions.map';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
@@ -14,17 +15,23 @@ export class PermissionsGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    if (!requiredPermissions?.length) return true;
+    if (!requiredPermissions || requiredPermissions.length === 0) {
+      return true;
+    }
 
     const request = context.switchToHttp().getRequest<RequestWithUser>();
     const user = request.user;
 
-    if (!user?.permissions?.length) return false;
+    if (!user?.role) {
+      throw new ForbiddenException('MISSING_USER_ROLE');
+    }
 
-    const hasPermission = requiredPermissions.some((p) => user.permissions.includes(p));
+    const userPermissions = ROLE_PERMISSIONS[user.role] || [];
+
+    const hasPermission = requiredPermissions.every((perm) => userPermissions.includes(perm));
 
     if (!hasPermission) {
-      throw new ForbiddenException('INSUFFICIENT_PERMISSIONS');
+      throw new ForbiddenException('FORBIDDEN_RESOURCE');
     }
 
     return true;

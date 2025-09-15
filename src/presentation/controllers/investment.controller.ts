@@ -1,22 +1,28 @@
-import { Controller, Get, Post, Body, Param, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Req, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { CreateInvestmentDto } from '@/presentation/dto/create-investment.dto';
 import { InvestmentService } from '@/domain/services/investment.service';
-import { Permissions } from '../decorators/permissions.decorator';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { Permission } from '@/domain/types/permissions';
-import { RolesGuard } from '../guards/roles.guard';
+import { Permissions } from '../decorators/permissions.decorator';
+import { PermissionsGuard } from '../guards/permissions.guard';
+import type { RequestWithUser } from '@/domain/types/request-with-user.interface';
+import { InvestmentMapper } from '@/domain/mappers/investment.mapper';
 
 @Controller('investments')
-@UseGuards(RolesGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class InvestmentController {
   constructor(private readonly investmentService: InvestmentService) {}
 
   @Get()
   @Permissions(Permission.VIEW_ALL_INVESTMENTS)
-  async findAll() {
+  async findAll(@Req() req: RequestWithUser) {
     const investments = await this.investmentService.findAll();
+    const grouped = InvestmentMapper.toList(investments, { groupByOwner: true });
+
     return {
       message: 'INVESTMENTS_RETRIEVED',
-      data: investments,
+      user: req.user,
+      data: grouped,
     };
   }
 
@@ -32,21 +38,43 @@ export class InvestmentController {
 
   @Get('property/:propertyId')
   @Permissions(Permission.VIEW_ALL_INVESTMENTS)
-  async findByProperty(@Param('propertyId') propertyId: string) {
+  async findByProperty(@Param('propertyId') propertyId: string, @Req() req: RequestWithUser) {
     const investments = await this.investmentService.findByPropertyId(propertyId);
+    const grouped = InvestmentMapper.toList(investments, { groupByOwner: true });
     return {
       message: 'INVESTMENTS_BY_PROPERTY_RETRIEVED',
-      data: investments,
+      user: req.user,
+      data: grouped,
+    };
+  }
+
+  @Get('me')
+  @Permissions(Permission.VIEW_MY_INVESTMENTS)
+  async findMyInvestments(@Req() req: RequestWithUser) {
+    const userId = req.user.sub;
+    const investments = await this.investmentService.findByUserId(userId);
+    const mapped = InvestmentMapper.toListForMe(investments);
+
+    return {
+      message: 'MY_INVESTMENTS_RETRIEVED',
+      data: mapped,
     };
   }
 
   @Post()
   @Permissions(Permission.INVEST)
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() dto: CreateInvestmentDto) {
-    const investment = await this.investmentService.create(dto);
+  async create(@Body() dto: CreateInvestmentDto, @Req() req: RequestWithUser) {
+    const ownerId = req.user.sub;
+
+    const investment = await this.investmentService.create({
+      ...dto,
+      ownerId,
+    });
+
     return {
       message: 'INVESTMENT_CREATED',
+      user: req.user,
       data: investment,
     };
   }

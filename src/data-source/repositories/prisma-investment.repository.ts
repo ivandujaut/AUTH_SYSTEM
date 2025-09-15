@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InvestmentRepository } from '@/domain/repositories/investment.repository';
 import { PrismaClient, Investment } from '@prisma/client';
+import { InvestmentWithRelations } from '@/domain/types/investment-with-relations.type';
 
 @Injectable()
 export class PrismaInvestmentRepository implements InvestmentRepository {
@@ -10,7 +11,7 @@ export class PrismaInvestmentRepository implements InvestmentRepository {
     return this.prisma.investment.create({ data });
   }
 
-  async findAll(): Promise<Investment[]> {
+  async findAll(): Promise<InvestmentWithRelations[]> {
     return this.prisma.investment.findMany({
       include: {
         property: true,
@@ -19,20 +20,22 @@ export class PrismaInvestmentRepository implements InvestmentRepository {
     });
   }
 
-  async findByUserId(userId: string): Promise<Investment[]> {
+  async findByUserId(userId: string): Promise<InvestmentWithRelations[]> {
     return this.prisma.investment.findMany({
       where: { ownerId: userId },
       include: {
         property: true,
+        owner: true,
       },
     });
   }
 
-  async findByPropertyId(propertyId: string): Promise<Investment[]> {
+  async findByPropertyId(propertyId: string): Promise<InvestmentWithRelations[]> {
     return this.prisma.investment.findMany({
       where: { propertyId },
       include: {
         property: true,
+        owner: true,
       },
     });
   }

@@ -1,71 +1,59 @@
-import { UnauthorizedException } from '@nestjs/common';
 import { AuthService } from '@/domain/services/auth.service';
+import { JwtService } from '@nestjs/jwt';
+import { LoginValidatorService } from '@/domain/services/login-validator.service';
 import { Role } from '@prisma/client';
-import jwt from 'jsonwebtoken';
+import { UnauthorizedException } from '@nestjs/common';
 
 describe('AuthService', () => {
   let service: AuthService;
 
-  const mockValidator = {
+  const mockValidator: Partial<LoginValidatorService> = {
     validate: jest.fn(),
   };
 
-  const mockJwtService = {
-    sign: jest.fn((payload: Record<string, string>) => jwt.sign(payload, 'TEST_SECRET', { expiresIn: '1h' })),
+  const mockJwtService: Partial<JwtService> = {
+    sign: jest.fn(),
   };
 
   beforeEach(() => {
-    mockValidator.validate.mockReset();
-    mockJwtService.sign.mockClear();
-    service = new AuthService(mockValidator as any, mockJwtService as any);
+    jest.clearAllMocks();
+    service = new AuthService(mockValidator as LoginValidatorService, mockJwtService as JwtService);
   });
 
-  it('Should return a valid access token when email and pass are correct', async () => {
-    mockValidator.validate.mockResolvedValueOnce({ id: 'user-id-123', email: 'demo@volsmart.com', role: 'USER' });
+  it('should return an access token when credentials are valid', async () => {
+    const user = {
+      id: 'user-id-123',
+      email: 'demo@volsmart.com',
+      role: Role.USER,
+    };
+
+    (mockValidator.validate as jest.Mock).mockResolvedValue(user);
+    (mockJwtService.sign as jest.Mock).mockReturnValue('fake-jwt-token');
 
     const result = await service.login({
       email: 'demo@volsmart.com',
       password: 'password123',
     });
 
-    expect(typeof result.access_token).toBe('string');
-    expect(result.access_token).toMatch(/^ey/);
+    expect(result.access_token).toBe('fake-jwt-token');
+    expect(mockValidator.validate).toHaveBeenCalledWith('demo@volsmart.com', 'password123');
+    expect(mockJwtService.sign).toHaveBeenCalledWith({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    });
   });
-  it('Should throw UnauthorizedException when credentials are invalid', async () => {
-    mockValidator.validate.mockRejectedValueOnce(new UnauthorizedException('INVALID_CREDENTIALS'));
+
+  it('should throw UnauthorizedException if credentials are invalid', async () => {
+    (mockValidator.validate as jest.Mock).mockRejectedValue(new UnauthorizedException('INVALID_CREDENTIALS'));
 
     await expect(
       service.login({
-        email: 'wrong@volsmart.com',
-        password: 'incorrect-password',
+        email: 'invalid@user.com',
+        password: 'wrong-password',
       }),
-    ).rejects.toMatchObject({
-      name: 'UnauthorizedException',
-      message: 'INVALID_CREDENTIALS',
-    });
-  });
-  it('should return a token with the correct claims', async () => {
-    mockValidator.validate.mockResolvedValueOnce({
-      id: 'user-id-123',
-      email: 'demo@volsmart.com',
-      role: Role.USER,
-    });
+    ).rejects.toThrow(UnauthorizedException);
 
-    const { access_token } = await service.login({
-      email: 'demo@volsmart.com',
-      password: 'password123',
-    });
-
-    const decoded = jwt.decode(access_token) as {
-      sub: string;
-      email: string;
-      role: Role;
-      iat: number;
-    };
-
-    expect(decoded.sub).toBe('user-id-123');
-    expect(decoded.email).toBe('demo@volsmart.com');
-    expect(decoded.role).toBe(Role.USER);
-    expect(typeof decoded.iat).toBe('number');
+    expect(mockValidator.validate).toHaveBeenCalled();
   });
 });

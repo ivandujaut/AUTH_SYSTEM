@@ -5,10 +5,6 @@ export class CreateInvestmentDto {
   @IsNotEmpty({ message: 'propertyId is required' })
   propertyId: string;
 
-  @IsString()
-  @IsNotEmpty({ message: 'ownerId is required' })
-  ownerId: string;
-
   @IsNumber()
   @IsPositive({ message: 'amount must be greater than 0' })
   amount: number;
