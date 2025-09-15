@@ -30,6 +30,7 @@ export class InvestmentController {
   @Permissions(Permission.VIEW_ALL_INVESTMENTS)
   async findByUser(@Param('userId') userId: string) {
     const investments = await this.investmentService.findByUserId(userId);
+
     return {
       message: 'INVESTMENTS_BY_USER_RETRIEVED',
       data: investments,
@@ -41,10 +42,25 @@ export class InvestmentController {
   async findByProperty(@Param('propertyId') propertyId: string, @Req() req: RequestWithUser) {
     const investments = await this.investmentService.findByPropertyId(propertyId);
     const grouped = InvestmentMapper.toList(investments, { groupByOwner: true });
+
     return {
       message: 'INVESTMENTS_BY_PROPERTY_RETRIEVED',
       user: req.user,
       data: grouped,
+    };
+  }
+
+  @Get('me/summary')
+  @Permissions(Permission.VIEW_MY_INVESTMENTS)
+  async getMyInvestmentsSummary(@Req() req: RequestWithUser) {
+    console.log('✅ [GET /investments/me/summary] endpoint reached');
+    const userId = req.user.sub;
+    const investments = await this.investmentService.findByUserId(userId);
+    const summary = InvestmentMapper.toSummary(investments);
+
+    return {
+      message: 'MY_INVESTMENTS_SUMMARY_RETRIEVED',
+      data: summary,
     };
   }
 
@@ -66,7 +82,6 @@ export class InvestmentController {
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() dto: CreateInvestmentDto, @Req() req: RequestWithUser) {
     const ownerId = req.user.sub;
-
     const investment = await this.investmentService.create({
       ...dto,
       ownerId,

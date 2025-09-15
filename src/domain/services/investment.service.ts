@@ -23,4 +23,8 @@ export class InvestmentService {
   async findByPropertyId(propertyId: string): Promise<InvestmentWithRelations[]> {
     return this.investmentRepo.findByPropertyId(propertyId);
   }
+
+  async getUserInvestmentSummary(userId: string): Promise<InvestmentWithRelations[]> {
+    return this.investmentRepo.getUserInvestmentSummary(userId);
+  }
 }

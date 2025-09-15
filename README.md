@@ -5,94 +5,173 @@
 [circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
 [circleci-url]: https://circleci.com/gh/nestjs/nest
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+# AUTH_SERVICE
 
-## Description
+Backend desarrollado con NestJS + PostgreSQL + Prisma para la gestión de autenticación, inversiones y propiedades, con foco en diseño escalable y mantenible.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## Tecnologías utilizadas
 
-```bash
-$ npm install
-```
+- **NestJS** (modular y escalable)
+- **PostgreSQL** (persistencia de datos)
+- **Prisma ORM**
+- **Jest** (testing)
+- **Docker** + **Docker Compose** (despliegue)
+- **Makefile** (automatización de tareas)
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+## Decisiones de diseño clave
 
-# watch mode
-$ npm run start:dev
+### Clean Architecture
 
-# production mode
-$ npm run start:prod
-```
+El código está organizado por capas (presentación, dominio, infraestructura), permitiendo:
+- Aislar la lógica de negocio
+- Facilitar la escalabilidad y testeo
+- Reemplazar tecnología sin afectar la lógica
 
-## Run tests
+### Sistema de permisos por rol
 
-```bash
-# unit tests
-$ npm run test
+Se implementó un sistema de permisos granular con guardas que:
+- Restringe acceso por rol (`USER`, `MANAGER`)
+- Aísla la lógica de autorización de los controladores
 
-# e2e tests
-$ npm run test:e2e
+### Validaciones y DTOs
 
-# test coverage
-$ npm run test:cov
-```
+Uso de DTOs (Data Transfer Objects) para:
+- Validar entradas de usuario
+- Documentar los contratos de cada endpoint
 
-## Deployment
+### Prisma + PostgreSQL
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+- Prisma facilita migraciones, tipado fuerte y performance.
+- Uso de `Decimal` para mantener precisión en valores monetarios.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Test Driven Development (TDD)
+
+- Tests unitarios y de integración con buena cobertura.
+- Scripts de test organizados por módulo.
+- Postman Collection para testing manual del API.
+
+---
+
+## Flujo de prueba sugerido (local)
+
+> Requiere: Docker y Node.js
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# 1. Levantar solo la DB
+make db-up
+
+# 2. Ejecutar migraciones y seeds
+make db-push
+make seed
+
+# 3. Ejecutar la API en modo desarrollo
+make dev
+
+# 4. Acceder a la base de datos (opcional)
+make studio
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+También podés levantar todo con:
 
-## Resources
+```bash
+make compose-up  # (API + DB en producción dockerizada)
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+---
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Testing manual con Postman
 
-## Support
+- Asegurate de importar la colección de Postman provista.
+- Variables necesarias:
+  - `base_url`: por defecto http://localhost:8080
+  - `access_token`: generado al hacer login
+  - `property_id`: usado para simular inversión
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+---
 
-## Stay in touch
+## Convenciones del proyecto
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Estructura del código
 
-## License
+```
+/src
+ ├── data-source/          # Prisma ORM y seeders
+ ├── domain/               # Servicios, entidades, interfaces
+ ├── presentation/         # Controladores, guards, decorators
+ ├── config/               # Config global
+ └── main.ts               # Entry point
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### Rutas principales
+
+| Rol      | Método | Ruta                        | Descripción                          |
+|----------|--------|-----------------------------|--------------------------------------|
+| USER     | GET    | `/investments/me`           | Ver sus inversiones                  |
+| USER     | GET    | `/investments/me/summary`   | Ver resumen de sus inversiones       |
+| USER     | POST   | `/investments`              | Invertir en una propiedad            |
+| MANAGER  | GET    | `/investments`              | Ver todas las inversiones            |
+| MANAGER  | GET    | `/investments/property/:id` | Ver inversiones por propiedad        |
+
+---
+
+## Mejoras para escalar el sistema
+
+1. **Persistencia distribuida / Sharding**  
+   Dividir por usuarios o propiedades si se escala a millones de registros.
+
+2. **Cache (Redis)**  
+   Para acelerar respuestas de agregaciones como el resumen de inversiones.
+
+3. **Indexado avanzado en PostgreSQL**  
+   Crear índices compuestos en queries más usadas.
+
+4. **Auditoría y trazabilidad**  
+   Guardar logs de inversión, cambios y accesos.
+
+5. **Webhooks y notificaciones**  
+   Notificar por mail o eventos internos (event sourcing).
+
+6. **Autenticación SSO o externa**  
+   Para empresas o integración con otros sistemas.
+
+7. **Uso de colas (RabbitMQ, Kafka)**  
+   Para procesamiento asíncrono de inversiones u otras operaciones pesadas.
+
+---
+
+## Variables de entorno `.env`
+
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=volsmart
+DB_PASSWORD=volsmart
+DB_NAME=volsmart_db
+JWT_SECRET=TEST_SECRET
+
+DATABASE_URL="postgresql://volsmart:volsmart@localhost:5432/volsmart_db"
+```
+
+---
+
+## Utilidades
+
+```bash
+make lint          # Corre ESLint
+make format        # Formatea el código
+make test          # Corre unit + e2e
+make studio        # Prisma Studio (GUI DB)
+```
+
+---
+
+## Notas finales
+
+El proyecto fue pensado para ser:
+- Extensible (roles, inversiones, propiedades)
+- Fácil de testear (alta cobertura)
+- Mantenible (clean code + clean architecture)
