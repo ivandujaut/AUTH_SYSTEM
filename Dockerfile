@@ -12,6 +12,21 @@ COPY prisma ./prisma
 RUN npx prisma generate
 RUN npm run build
 
+FROM node:20-alpine AS development
+
+WORKDIR /app
+
+# Evita instalar solo las prod deps si alguna cache define NODE_ENV
+ENV NODE_ENV=development
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+COPY prisma ./prisma
+
+RUN npx prisma generate
+
 # Etapa 2: producción
 FROM node:20-alpine AS runner
 WORKDIR /app

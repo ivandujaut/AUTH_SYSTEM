@@ -22,7 +22,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: builder
+      target: development
     container_name: volsmart_api
     working_dir: /app
     command: npm run start:dev

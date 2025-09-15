@@ -110,6 +110,48 @@ make studio     # Abre Prisma Studio (inspección visual de la DB)
 
 ---
 
+## 🛠️ Crear archivo `.env` obligatorio para entornos Docker
+
+Antes de poder levantar el entorno de desarrollo o producción usando Docker, es necesario crear un archivo `.env` en la raíz del proyecto con el siguiente contenido:
+
+```env
+DB_HOST=db
+DB_PORT=5432
+DB_USER=volsmart
+DB_PASSWORD=volsmart
+DB_NAME=volsmart_db
+
+POSTGRES_USER=volsmart
+POSTGRES_PASSWORD=volsmart
+POSTGRES_DB=volsmart_db
+
+DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+
+JWT_SECRET=TEST_SECRET
+```
+
+> ⚠️ Este archivo es utilizado por los comandos `make dev-init` y `make prod-init` para configurar correctamente la base de datos y levantar los contenedores. No debe ser versionado.
+
+---
+
+### 🧪 Crear archivo `.env.test.local` para pruebas locales
+
+Para ejecutar pruebas sin levantar contenedores, es necesario crear el archivo `.env.test.local` en la raíz del proyecto con las siguientes variables:
+
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=volsmart
+DB_PASSWORD=volsmart
+DB_NAME=volsmart_db
+
+DATABASE_URL=postgresql://volsmart:volsmart@localhost:5432/volsmart_db
+
+JWT_SECRET=TEST_SECRET
+```
+
+> ⚠️ Este archivo se usa exclusivamente durante `make test-local` y `make studio`. No debe ser versionado.
+
 ## 🚀 Despliegue en Producción con Docker Compose
 
 > Requiere tener Docker instalado.
@@ -243,24 +285,6 @@ El proyecto utiliza diferentes archivos `.env` según el entorno:
 - `.env`: archivo principal usado tanto en desarrollo como producción dentro de los contenedores. Contiene variables comunes como credenciales de DB y JWT_SECRET.
 - `.env.studio`: usado exclusivamente por `Prisma Studio` al ejecutarse en modo local. Reemplaza `DB_HOST=db` por `DB_HOST=localhost` para que Prisma pueda conectarse al contenedor de PostgreSQL desde fuera del contenedor.
 
-> ⚠️ Recordá que al correr `make studio`, Prisma Studio corre en tu máquina local, por lo tanto debe conectarse a la base de datos mediante `localhost` en lugar de `db`.
-
-```
-DB_HOST=db
-DB_PORT=5432
-DB_USER=volsmart
-DB_PASSWORD=volsmart
-DB_NAME=volsmart_db
-
-POSTGRES_USER=volsmart
-POSTGRES_PASSWORD=volsmart
-POSTGRES_DB=volsmart_db
-
-DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
-
-JWT_SECRET=TEST_SECRET
-```
-
 ---
 
 ## Utilidades
@@ -269,14 +293,115 @@ JWT_SECRET=TEST_SECRET
 make lint          # Corre ESLint
 make format        # Formatea el código
 make test          # Corre tests unitarios + e2e
-make studio        # Prisma Studio (GUI para inspección de la DB)
-
+make studio        # Abre Prisma Studio para inspección visual
 # Flujo para entorno de desarrollo con Docker
 make dev-init      # Levanta API + DB, aplica schema y seed de desarrollo
 
 # Flujo para entorno de producción con Docker
 make prod-init     # Levanta API + DB, aplica migraciones y seed de producción
 ```
+
+---
+
+## 🧪 Ejecución de tests de forma local
+
+> Este flujo corre los tests usando tu base de datos local (fuera de Docker) y variables de entorno específicas para testing.
+
+### 1. Crear archivo `.env.test.local`
+
+Este archivo define las variables que apuntan a tu base de datos local.
+
+```bash
+touch .env.test.local
+```
+
+Con este contenido:
+
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=volsmart
+DB_PASSWORD=volsmart
+DB_NAME=volsmart_db
+
+DATABASE_URL=postgresql://volsmart:volsmart@localhost:5432/volsmart_db
+JWT_SECRET=TEST_SECRET
+```
+
+---
+
+### 2. Ejecutar script completo de pruebas
+
+```bash
+make test-local
+```
+
+Este comando ejecuta:
+
+- `prisma db push` sobre la base local (`localhost`)
+- `seed-dev` cargando los usuarios necesarios
+- Todos los tests (`unitarios` + `e2e`) con la configuración de `.env.test.local`
+
+---
+
+### 3. Inspeccionar la base con Prisma Studio (opcional)
+
+```bash
+make studio
+```
+
+> Requiere tener instalado `npx`.
+
+---
+
+### Notas
+
+- El archivo `.env.test.local` **nunca debe versionarse** (`.gitignore` ya lo excluye).
+- Usar este flujo te permite correr tests sin levantar Docker.
+
+---
+
+## 🧪 Flujo general de Makefile
+
+### ✅ Ejecutar tests de forma local (sin Docker)
+
+```bash
+make test-local
+```
+
+> Detalles sobre cómo configurar `.env.test.local` en la sección anterior: [🧪 Ejecución de tests de forma local](#-ejecución-de-tests-de-forma-local).
+
+---
+
+### 🛠️ Levantar entorno de desarrollo con Docker
+
+```bash
+make dev-init
+```
+
+Ejecuta:
+1. `make dev-up` → levanta `api` + `db` usando `docker-compose.dev.yml`
+2. `make db-push` → aplica el schema con Prisma
+3. `make seed-dev-docker` → ejecuta el seed dentro del contenedor
+
+Verificar en: [http://localhost:8080](http://localhost:8080)
+
+---
+
+### 🚀 Levantar entorno de producción con Docker
+
+```bash
+make prod-init
+```
+
+Ejecuta:
+1. `make prod-up` → levanta servicios con `docker-compose.prod.yml`
+2. `make prod-migrate` → aplica migraciones
+3. `make prod-seed` → ejecuta el seed productivo
+
+---
+
+De esta forma, cualquier persona puede entender y ejecutar el flujo completo.
 
 ---
 
@@ -294,3 +419,12 @@ El proyecto fue pensado para ser:
 - `ADMIN`: rol reservado para tareas administrativas y de configuración.
 
 > Por diseño, solo los usuarios con rol `USER` pueden crear inversiones.
+
+---
+
+## 🔍 Consideraciones generales
+
+- El backend debe estar corriendo (`make dev-up` o `make prod-up`) para que los endpoints y los tests respondan correctamente.
+- Si modificás variables en `.env`, recordá reflejarlas también en Postman o en los entornos `.env.test.local` y `.env.studio` según corresponda.
+- El archivo `.env.test.local` **nunca debe versionarse** (`.gitignore` ya lo excluye).
+- Usar `make test-local` te permite correr los tests sin levantar Doc
