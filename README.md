@@ -7,9 +7,25 @@
 
 # AUTH_SERVICE
 
-Backend desarrollado con NestJS + PostgreSQL + Prisma para la gestión de autenticación, inversiones y propiedades, con foco en diseño escalable y mantenible.
+## Contenidos
 
----
+- [Tecnologías utilizadas](#tecnologías-utilizadas)
+- [Decisiones de diseño clave](#decisiones-de-diseño-clave)
+- [🧪 Flujo de prueba en desarrollo (entorno local)](#-flujo-de-prueba-en-desarrollo-entorno-local)
+- [🛠️ Crear archivo `.env`](#-crear-archivo-env-obligatorio-para-entornos-docker)
+- [🧪 `.env.test.local` para testing](#-crear-archivo-envtestlocal-para-pruebas-locales)
+- [🚀 Despliegue en Producción](#despliegue-en-producción-con-docker-compose)
+- [🧪 Tests en Postman](#-tests-en-postman)
+- [Convenciones del proyecto](#convenciones-del-proyecto)
+- [Variables de entorno](#variables-de-entorno)
+- [Utilidades](#utilidades)
+- [🧪 Ejecución de tests de forma local](#-ejecución-de-tests-de-forma-local)
+- [🧪 Flujo general de Makefile](#-flujo-general-de-makefile)
+- [Notas finales](#notas-finales)
+- [🔍 Consideraciones generales](#-consideraciones-generales)
+
+
+--
 
 ## Tecnologías utilizadas
 
@@ -20,7 +36,7 @@ Backend desarrollado con NestJS + PostgreSQL + Prisma para la gestión de autent
 - **Docker** + **Docker Compose** (despliegue)
 - **Makefile** (automatización de tareas)
 
----
+--
 
 ## Decisiones de diseño clave
 
@@ -54,7 +70,11 @@ Uso de DTOs (Data Transfer Objects) para:
 - Scripts de test organizados por módulo.
 - Postman Collection para testing manual del API.
 
----
+--
+
+
+
+
 
 ## 🧪 Flujo de prueba en desarrollo (entorno local)
 
@@ -71,7 +91,7 @@ Esto levanta:
 - `volsmart_api`: Servidor NestJS en modo desarrollo con hot reload.
 - `volsmart_db`: Contenedor PostgreSQL.
 
----
+--
 
 ### 2. Crear estructura de tablas y popular con datos de ejemplo
 
@@ -91,7 +111,7 @@ Esto ejecuta en orden:
 - `db-push`
 - `seed-dev`
 
----
+--
 
 ### 3. Verificar que la API funcione
 
@@ -99,7 +119,7 @@ Accedé a: [http://localhost:8080](http://localhost:8080)
 
 Podés usar Postman con el entorno `AUTH_SYSTEM_LOCAL`.
 
----
+--
 
 ### 4. Logs y herramientas opcionales
 
@@ -108,7 +128,7 @@ make dev-logs   # Ver logs del servidor
 make studio     # Abre Prisma Studio (inspección visual de la DB)
 ```
 
----
+--
 
 ## 🛠️ Crear archivo `.env` obligatorio para entornos Docker
 
@@ -132,7 +152,7 @@ JWT_SECRET=TEST_SECRET
 
 > ⚠️ Este archivo es utilizado por los comandos `make dev-init` y `make prod-init` para configurar correctamente la base de datos y levantar los contenedores. No debe ser versionado.
 
----
+--
 
 ### 🧪 Crear archivo `.env.test.local` para pruebas locales
 
@@ -167,7 +187,7 @@ Este comando levanta:
 - `volsmart_api`: Aplicación backend en modo producción.
 - `volsmart_db`: Contenedor PostgreSQL con volumen persistente.
 
----
+--
 
 ### 2. Inicializar base de datos en producción
 
@@ -187,13 +207,13 @@ Esto ejecuta en orden:
 - `prod-migrate`
 - `prod-seed`
 
----
+--
 
 ### 3. Verificar aplicación corriendo
 
 Accedé a la API en: [http://localhost:8080](http://localhost:8080)
 
----
+--
 
 ### 4. Detener entorno de producción
 
@@ -219,7 +239,7 @@ make prod-down
    - Asegurate de que el entorno seleccionado sea `AUTH_SYSTEM_LOCAL`.
    - Ejecutá la colección.
 
----
+--
 
 ### 📝 Notas
 
@@ -249,7 +269,7 @@ make prod-down
 | MANAGER  | GET    | `/investments`              | Ver todas las inversiones            |
 | MANAGER  | GET    | `/investments/property/:id` | Ver inversiones por propiedad        |
 
----
+--
 
 ## Mejoras para escalar el sistema
 
@@ -274,7 +294,7 @@ make prod-down
 7. **Uso de colas (RabbitMQ, Kafka)**  
    Para procesamiento asíncrono de inversiones u otras operaciones pesadas.
 
----
+--
 
 ## Variables de entorno
 
@@ -285,7 +305,7 @@ El proyecto utiliza diferentes archivos `.env` según el entorno:
 - `.env`: archivo principal usado tanto en desarrollo como producción dentro de los contenedores. Contiene variables comunes como credenciales de DB y JWT_SECRET.
 - `.env.studio`: usado exclusivamente por `Prisma Studio` al ejecutarse en modo local. Reemplaza `DB_HOST=db` por `DB_HOST=localhost` para que Prisma pueda conectarse al contenedor de PostgreSQL desde fuera del contenedor.
 
----
+--
 
 ## Utilidades
 
@@ -301,7 +321,7 @@ make dev-init      # Levanta API + DB, aplica schema y seed de desarrollo
 make prod-init     # Levanta API + DB, aplica migraciones y seed de producción
 ```
 
----
+--
 
 ## 🧪 Ejecución de tests de forma local
 
@@ -328,7 +348,7 @@ DATABASE_URL=postgresql://volsmart:volsmart@localhost:5432/volsmart_db
 JWT_SECRET=TEST_SECRET
 ```
 
----
+--
 
 ### 2. Ejecutar script completo de pruebas
 
@@ -342,7 +362,7 @@ Este comando ejecuta:
 - `seed-dev` cargando los usuarios necesarios
 - Todos los tests (`unitarios` + `e2e`) con la configuración de `.env.test.local`
 
----
+--
 
 ### 3. Inspeccionar la base con Prisma Studio (opcional)
 
@@ -352,14 +372,14 @@ make studio
 
 > Requiere tener instalado `npx`.
 
----
+--
 
 ### Notas
 
 - El archivo `.env.test.local` **nunca debe versionarse** (`.gitignore` ya lo excluye).
 - Usar este flujo te permite correr tests sin levantar Docker.
 
----
+--
 
 ## 🧪 Flujo general de Makefile
 
@@ -371,7 +391,7 @@ make test-local
 
 > Detalles sobre cómo configurar `.env.test.local` en la sección anterior: [🧪 Ejecución de tests de forma local](#-ejecución-de-tests-de-forma-local).
 
----
+--
 
 ### 🛠️ Levantar entorno de desarrollo con Docker
 
@@ -386,7 +406,7 @@ Ejecuta:
 
 Verificar en: [http://localhost:8080](http://localhost:8080)
 
----
+--
 
 ### 🚀 Levantar entorno de producción con Docker
 
@@ -399,11 +419,11 @@ Ejecuta:
 2. `make prod-migrate` → aplica migraciones
 3. `make prod-seed` → ejecuta el seed productivo
 
----
+--
 
 De esta forma, cualquier persona puede entender y ejecutar el flujo completo.
 
----
+--
 
 ## Notas finales
 
@@ -420,11 +440,11 @@ El proyecto fue pensado para ser:
 
 > Por diseño, solo los usuarios con rol `USER` pueden crear inversiones.
 
----
+--
 
 ## 🔍 Consideraciones generales
 
 - El backend debe estar corriendo (`make dev-up` o `make prod-up`) para que los endpoints y los tests respondan correctamente.
 - Si modificás variables en `.env`, recordá reflejarlas también en Postman o en los entornos `.env.test.local` y `.env.studio` según corresponda.
 - El archivo `.env.test.local` **nunca debe versionarse** (`.gitignore` ya lo excluye).
-- Usar `make test-local` te permite correr los tests sin levantar Doc
+- Usar `make test-local` te permite correr los tests sin necesidad de levantar Docker.

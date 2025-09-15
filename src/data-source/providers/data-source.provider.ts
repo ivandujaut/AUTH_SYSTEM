@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DataSourceProvider {
-  private connection: any; // Aquí iría tu conexión a BD, Redis, etc.
+  private connection: any;
 
   constructor(private readonly configService: ConfigService) {}
 }
