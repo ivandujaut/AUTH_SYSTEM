@@ -56,65 +56,133 @@ Uso de DTOs (Data Transfer Objects) para:
 
 ---
 
-## Flujo de prueba (entorno local)
+## 🧪 Flujo de prueba en desarrollo (entorno local)
 
-> Requisitos: Docker, Node.js, y `make`
+> Requisitos: Docker, Node.js, y `make` instalados.
+
+### 1. Levantar entorno de desarrollo
 
 ```bash
-# 1. Levantar entorno completo (API + DB + Prisma Studio)
 make dev-up
+```
 
-# 2. Aplicar migraciones y datos iniciales
-make db-push
-make seed
+Esto levanta:
 
-# 3. Ver logs de la API (opcional)
-make dev-logs
+- `volsmart_api`: Servidor NestJS en modo desarrollo con hot reload.
+- `volsmart_db`: Contenedor PostgreSQL.
 
-# 4. Abrir Prisma Studio (GUI de la base de datos)
-make studio
+---
+
+### 2. Crear estructura de tablas y popular con datos de ejemplo
+
+```bash
+make db-push    # Aplica el esquema de la base de datos
+make seed       # Inserta usuarios de prueba
+```
+
+O bien, ejecutá ambos con:
+
+```bash
+make dev-init
+```
+
+Esto ejecuta en orden:
+- `dev-up`
+- `db-push`
+- `seed-dev`
+
+---
+
+### 3. Verificar que la API funcione
+
+Accedé a: [http://localhost:8080](http://localhost:8080)
+
+Podés usar Postman con el entorno `AUTH_SYSTEM_LOCAL`.
+
+---
+
+### 4. Logs y herramientas opcionales
+
+```bash
+make dev-logs   # Ver logs del servidor
+make studio     # Abre Prisma Studio (inspección visual de la DB)
 ```
 
 ---
 
 ## 🚀 Despliegue en Producción con Docker Compose
 
-### Levantar entorno de producción con Make
-
 > Requiere tener Docker instalado.
 
+### 1. Iniciar entorno de producción
+
 ```bash
-make prod-up       # Levanta API + DB en producción
+make prod-up
 ```
 
-Esto iniciará los siguientes servicios:
+Este comando levanta:
 
-- `volsmart_api`: La aplicación backend en modo producción.
-- `volsmart_db`: El contenedor de PostgreSQL con volúmenes persistentes.
+- `volsmart_api`: Aplicación backend en modo producción.
+- `volsmart_db`: Contenedor PostgreSQL con volumen persistente.
 
-Para detener el entorno:
+---
+
+### 2. Inicializar base de datos en producción
+
+```bash
+make prod-migrate   # Aplica las migraciones
+make prod-seed      # Inserta datos de prueba
+```
+
+O bien, podés ejecutar ambos con:
+
+```bash
+make prod-init
+```
+
+Esto ejecuta en orden:
+- `prod-up`
+- `prod-migrate`
+- `prod-seed`
+
+---
+
+### 3. Verificar aplicación corriendo
+
+Accedé a la API en: [http://localhost:8080](http://localhost:8080)
+
+---
+
+### 4. Detener entorno de producción
 
 ```bash
 make prod-down
 ```
 ---
-## Tests en Postman
+## 🧪 Tests en Postman
 
-Se incluye una colección de Postman para probar los endpoints del servicio.
+1. Asegúrate de tener una cuenta en [Postman](https://www.postman.com/) y haber aceptado la invitación al workspace compartido (via mail).
 
-### Pasos para probar
+2. Una vez dentro del workspace, deberías ver:
+   - La colección con todos los endpoints.
+   - El entorno `AUTH_SYSTEM_LOCAL`, que ya contiene las variables necesarias.
 
-1. Abrí Postman.
-2. Importá la colección `challenge.postman_collection.json`.
-3. Importá las variables de entorno desde `challenge_environment.postman_environment.json`.
-4. Seleccioná el entorno activo (arriba a la derecha en Postman).
-5. Ejecutá los endpoints en el orden adecuado:
-   - Autenticación (Login)
-   - Propiedades
-   - Inversiones
-   - Resumen de inversiones
+3. Para comenzar a probar:
+   - Seleccioná el entorno `AUTH_SYSTEM_LOCAL` en la parte superior derecha.
+   - Ejecutá los endpoints deseados desde la colección.
+   - Podés utilizar `{{base_url}}`, `{{access_token}}`, etc., ya preconfigurados.
 
-> ⚠️ Asegurate de tener corriendo el backend en `http://localhost:8080` o actualizá la variable `base_url` si usás otra dirección.
+4. Si deseás correr una colección completa como test suite:
+   - Hacé clic en "Run collection".
+   - Asegurate de que el entorno seleccionado sea `AUTH_SYSTEM_LOCAL`.
+   - Ejecutá la colección.
+
+---
+
+### 📝 Notas
+
+- El backend debe estar corriendo (`make dev-up` o `make prod-up`) para que los endpoints respondan correctamente.
+- Si modificás variables en `.env`, recordá reflejarlas en el environment de Postman si fuera necesario.
 
 ## Convenciones del proyecto
 
@@ -166,7 +234,16 @@ Se incluye una colección de Postman para probar los endpoints del servicio.
 
 ---
 
-## Variables de entorno `.env`
+## Variables de entorno
+
+### Archivos `.env` disponibles
+
+El proyecto utiliza diferentes archivos `.env` según el entorno:
+
+- `.env`: archivo principal usado tanto en desarrollo como producción dentro de los contenedores. Contiene variables comunes como credenciales de DB y JWT_SECRET.
+- `.env.studio`: usado exclusivamente por `Prisma Studio` al ejecutarse en modo local. Reemplaza `DB_HOST=db` por `DB_HOST=localhost` para que Prisma pueda conectarse al contenedor de PostgreSQL desde fuera del contenedor.
+
+> ⚠️ Recordá que al correr `make studio`, Prisma Studio corre en tu máquina local, por lo tanto debe conectarse a la base de datos mediante `localhost` en lugar de `db`.
 
 ```
 DB_HOST=db
@@ -191,8 +268,14 @@ JWT_SECRET=TEST_SECRET
 ```bash
 make lint          # Corre ESLint
 make format        # Formatea el código
-make test          # Corre unit + e2e
-make studio        # Prisma Studio (GUI DB)
+make test          # Corre tests unitarios + e2e
+make studio        # Prisma Studio (GUI para inspección de la DB)
+
+# Flujo para entorno de desarrollo con Docker
+make dev-init      # Levanta API + DB, aplica schema y seed de desarrollo
+
+# Flujo para entorno de producción con Docker
+make prod-init     # Levanta API + DB, aplica migraciones y seed de producción
 ```
 
 ---

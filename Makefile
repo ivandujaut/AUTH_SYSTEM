@@ -27,11 +27,11 @@ db-down:
 	$(DC_DEV) stop db && $(DC_DEV) rm -f db
 
 # ==============================
-# 🧪 Inicializar entorno completo y testear
+# 🧪 Inicializa el entorno completo con Docker (API + DB), aplica el esquema y seed de desarrollo, y corre tests
 # ==============================
 
 dev-init:
-	make dev-up && make db-push && make seed && make test
+	make dev-up && make db-push && make seed-dev && make test
 
 # ==============================
 # 🚀 Despliegue en Producción con Docker Compose
@@ -40,6 +40,9 @@ dev-init:
 prod-up:
 	$(DC_PROD) up --build -d
 
+prod-init:
+	make prod-up && make prod-migrate && make prod-seed
+
 prod-down:
 	$(DC_PROD) down -v
 
@@ -47,17 +50,30 @@ prod-logs:
 	$(DC_PROD) logs -f api
 
 # ==============================
+# 📦 Producción - Migraciones y Seed
+# ==============================
+
+prod-migrate:
+	docker compose -f docker-compose.prod.yml exec api npx prisma migrate deploy --schema=./prisma/schema.prisma
+
+prod-seed:
+	docker compose -f docker-compose.prod.yml exec api npm run seed:run
+
+# ==============================
 # 🔧 Prisma ORM
 # ==============================
 
 db-push:
-	npx prisma db push
+	docker compose -f docker-compose.dev.yml exec api npx prisma db push
 
 studio:
-	npx prisma studio
+	env $(shell cat .env.studio | xargs) npx prisma studio
 
 seed:
-	npm run seed:run
+	docker compose -f docker-compose.dev.yml exec api npm run seed:run
+
+seed-dev:
+	docker compose -f docker-compose.dev.yml exec api npm run seed:dev
 
 setup-db:
 	make db-up && make db-push && make seed

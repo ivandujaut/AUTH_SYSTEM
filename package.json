@@ -35,7 +35,8 @@
     "test:e2e:auth": "jest --config=jest.config.mjs --testPathPattern=auth\\.e2e-spec\\.ts$",
     "compose:up": "docker compose up -d",
     "compose:down": "docker compose down -v",
-    "seed:run": "ts-node -r tsconfig-paths/register src/data-source/seed.ts",
+    "seed:dev": "ts-node -r tsconfig-paths/register src/data-source/seed.ts",
+    "seed:run": "node dist/data-source/seed.js",
     "prisma:seed": "npm run seed:run",
     "db:push": "prisma db push",
     "studio": "prisma studio"

@@ -8,6 +8,7 @@ RUN npm install
 
 # Copiar el resto del proyecto y construir
 COPY . .
+COPY prisma ./prisma
 RUN npx prisma generate
 RUN npm run build
 
@@ -24,9 +25,11 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 # Copiar los artefactos desde la etapa de build
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/src ./src
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/prisma ./prisma
 
 # Asignar permisos y cambiar al usuario no-root
 RUN chown -R appuser:appgroup /app
