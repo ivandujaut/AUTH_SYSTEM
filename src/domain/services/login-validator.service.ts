@@ -1,15 +1,14 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PrismaClient, Role } from '@prisma/client';
+import { UserRepository } from '../repositories/user.repository';
 import * as bcrypt from 'bcryptjs';
+import { LoginValidator, ValidatedUser } from '../interfaces/login-validator.interface';
 
 @Injectable()
-export class LoginValidatorService {
-  constructor(private readonly prisma: PrismaClient) {}
+export class LoginValidatorService implements LoginValidator {
+  constructor(private readonly userRepository: UserRepository) {}
 
-  async validate(email: string, password: string): Promise<{ id: string; email: string; role: Role }> {
-    const user = await this.prisma.user.findUnique({
-      where: { email },
-    });
+  async validate(email: string, password: string): Promise<ValidatedUser> {
+    const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
       throw new UnauthorizedException('INVALID_CREDENTIALS');

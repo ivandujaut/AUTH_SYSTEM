@@ -1,27 +1,27 @@
 import { LoginValidatorService } from '@/domain/services/login-validator.service';
-import { PrismaClient } from '@prisma/client';
+import { Role } from '@prisma/client';
+import { UnauthorizedException } from '@nestjs/common';
+import { UserRepository } from '@/domain/repositories/user.repository';
 import * as bcrypt from 'bcryptjs';
 
 describe('LoginValidatorService', () => {
   let service: LoginValidatorService;
 
-  const mockPrisma = {
-    user: {
-      findUnique: jest.fn(),
-    },
-  } as unknown as PrismaClient;
+  const mockUserRepository: jest.Mocked<UserRepository> = {
+    findByEmail: jest.fn(),
+  };
 
   beforeEach(() => {
-    service = new LoginValidatorService(mockPrisma);
+    service = new LoginValidatorService(mockUserRepository);
+    jest.clearAllMocks();
   });
 
-  /* eslint-disable @typescript-eslint/unbound-method */
-  it('debería devolver el usuario si las credenciales son correctas', async () => {
+  it('should return the user if the credentials are correct', async () => {
     const hashedPassword = await bcrypt.hash('password123', 10);
-    const findUniqueMock = mockPrisma.user.findUnique as jest.Mock;
-    findUniqueMock.mockResolvedValueOnce({
+    mockUserRepository.findByEmail.mockResolvedValueOnce({
       id: 'user-id-123',
       email: 'demo@volsmart.com',
+      role: Role.USER,
       passwordHash: hashedPassword,
     });
 
@@ -30,6 +30,25 @@ describe('LoginValidatorService', () => {
     expect(result).toEqual({
       id: 'user-id-123',
       email: 'demo@volsmart.com',
+      role: Role.USER,
     });
+  });
+
+  it('should throw UnauthorizedException if the user does not exist', async () => {
+    mockUserRepository.findByEmail.mockResolvedValueOnce(null);
+
+    await expect(service.validate('notfound@volsmart.com', 'password123')).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('should throw UnauthorizedException if the password is incorrect', async () => {
+    const hashedPassword = await bcrypt.hash('password123', 10);
+    mockUserRepository.findByEmail.mockResolvedValueOnce({
+      id: 'user-id-123',
+      email: 'demo@volsmart.com',
+      role: Role.USER,
+      passwordHash: hashedPassword,
+    });
+
+    await expect(service.validate('demo@volsmart.com', 'wrong-password')).rejects.toThrow(UnauthorizedException);
   });
 });

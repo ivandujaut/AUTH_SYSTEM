@@ -1,14 +1,12 @@
 import { Permission } from '@/domain/types/permissions';
 import { PrismaClient } from '@prisma/client';
-import { scryptSync, randomBytes } from 'crypto';
+import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const hash = (pw: string): string => {
-    const salt = randomBytes(16).toString('hex');
-    const hash = scryptSync(pw, salt, 64).toString('hex');
-    return `${salt}:${hash}`;
+  const hash = async (pw: string): Promise<string> => {
+    return await bcrypt.hash(pw, 10);
   };
 
   await prisma.user.upsert({
@@ -16,7 +14,7 @@ async function main() {
     update: {},
     create: {
       email: 'admin@volsmart.io',
-      passwordHash: hash('Password123!'),
+      passwordHash: await hash('Password123!'),
       role: 'ADMIN',
       permissions: Object.values(Permission),
     },
@@ -27,7 +25,7 @@ async function main() {
     update: {},
     create: {
       email: 'manager@volsmart.io',
-      passwordHash: hash('Password123!'),
+      passwordHash: await hash('Password123!'),
       role: 'MANAGER',
       permissions: [
         Permission.VIEW_PROPERTIES,
@@ -44,7 +42,7 @@ async function main() {
     update: {},
     create: {
       email: 'user@volsmart.io',
-      passwordHash: hash('Password123!'),
+      passwordHash: await hash('Password123!'),
       role: 'USER',
       permissions: [
         Permission.VIEW_PROPERTIES,

@@ -32,6 +32,7 @@
     "test:e2e:placements": "jest --config=jest.config.mjs --testRegex=placements\\.e2e-spec\\.ts$",
     "test:e2e:properties": "jest --config=jest.config.mjs --testRegex=properties\\.e2e-spec\\.ts$",
     "test:e2e:investments": "jest --config=jest.config.mjs --testPathPattern=investments\\.e2e-spec\\.ts$",
+    "test:e2e:auth": "jest --config=jest.config.mjs --testPathPattern=auth\\.e2e-spec\\.ts$",
     "compose:up": "docker compose up -d",
     "compose:down": "docker compose down -v",
     "seed:run": "ts-node -r tsconfig-paths/register src/data-source/seed.ts",
