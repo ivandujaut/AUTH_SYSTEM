@@ -18,18 +18,23 @@ describe('PlacementService', () => {
 
   describe('create', () => {
     it('should create a placement and return it', async () => {
+      const now = new Date();
+      const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
       const dto: CreatePlacementDto = {
         propertyId: 'property-123',
-        startDate: new Date(),
-        endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        startDate: now.toISOString(),
+        endDate: nextWeek.toISOString(),
       };
 
-      const mockPlacement = {
+      const mockPlacement: Placement = {
         id: 'placement-456',
-        ...dto,
+        propertyId: dto.propertyId,
+        startDate: new Date(dto.startDate),
+        endDate: new Date(dto.endDate),
         createdAt: new Date(),
         updatedAt: new Date(),
-      } as Placement;
+      };
 
       mockRepository.create.mockResolvedValue(mockPlacement);
 

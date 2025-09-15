@@ -17,7 +17,6 @@ describe('AuthController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
 
-    // Usa ValidationPipe como en app real
     app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
     await app.init();
 
@@ -26,6 +25,9 @@ describe('AuthController (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
+  });
+
+  afterEach(async () => {
     await prisma.$disconnect();
   });
 
