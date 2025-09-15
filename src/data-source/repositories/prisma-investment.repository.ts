@@ -39,4 +39,14 @@ export class PrismaInvestmentRepository implements InvestmentRepository {
       },
     });
   }
+
+  async getUserInvestmentSummary(userId: string): Promise<InvestmentWithRelations[]> {
+    return this.prisma.investment.findMany({
+      where: { ownerId: userId },
+      include: {
+        property: true,
+        owner: true,
+      },
+    });
+  }
 }
