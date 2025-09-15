@@ -1,4 +1,3 @@
-import { Permission } from '@/domain/types/permissions';
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
@@ -9,6 +8,7 @@ async function main() {
     return await bcrypt.hash(pw, 10);
   };
 
+  // ADMIN
   await prisma.user.upsert({
     where: { email: 'admin@volsmart.io' },
     update: {},
@@ -16,27 +16,21 @@ async function main() {
       email: 'admin@volsmart.io',
       passwordHash: await hash('Password123!'),
       role: 'ADMIN',
-      permissions: Object.values(Permission),
     },
   });
 
-  const manager = await prisma.user.upsert({
+  // MANAGER
+  await prisma.user.upsert({
     where: { email: 'manager@volsmart.io' },
     update: {},
     create: {
       email: 'manager@volsmart.io',
       passwordHash: await hash('Password123!'),
       role: 'MANAGER',
-      permissions: [
-        Permission.VIEW_PROPERTIES,
-        Permission.VIEW_PLACEMENT,
-        Permission.VIEW_ALL_INVESTMENTS,
-        Permission.VIEW_USERS,
-        Permission.INVEST,
-      ],
     },
   });
 
+  // USER
   const user = await prisma.user.upsert({
     where: { email: 'user@volsmart.io' },
     update: {},
@@ -44,15 +38,10 @@ async function main() {
       email: 'user@volsmart.io',
       passwordHash: await hash('Password123!'),
       role: 'USER',
-      permissions: [
-        Permission.VIEW_PROPERTIES,
-        Permission.VIEW_PLACEMENT,
-        Permission.VIEW_MY_INVESTMENTS,
-        Permission.INVEST,
-      ],
     },
   });
 
+  // PROPERTIES
   const re1 = await prisma.property.upsert({
     where: { symbol: 'VLS-RE1' },
     update: {},
@@ -73,16 +62,18 @@ async function main() {
     },
   });
 
+  // PLACEMENT para VLS-RE1
   await prisma.placement.upsert({
     where: { propertyId: re1.id },
     update: {},
     create: {
       propertyId: re1.id,
       startDate: new Date(),
-      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // +30 días
     },
   });
 
+  // INVESTMENTS
   await prisma.investment.createMany({
     data: [
       {
@@ -96,12 +87,6 @@ async function main() {
         propertyId: re2.id,
         amount: 50,
         avgPrice: 80.5,
-      },
-      {
-        ownerId: manager.id,
-        propertyId: re1.id,
-        amount: 20,
-        avgPrice: 99.5,
       },
     ],
   });
